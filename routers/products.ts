@@ -1,41 +1,53 @@
 import express from "express";
-import fileDb from "../fileDb";
 import {ProductWithoutId} from "../types";
 import { imagesUpload } from "../multer";
+import Product from "../models/Product";
 
 const productsRouter = express.Router();
 
 productsRouter.get('/', async (req, res) => {
-  const products = await fileDb.getItems();
-  res.send(products);
+  try {
+    const products = await Product.find();
+    return res.send(products);
+  } catch {
+    return res.sendStatus(500);
+  }
 });
 
 productsRouter.get('/:id', async (req, res) => {
-  const products = await fileDb.getItems();
-  const product = products.find(product => product.id === req.params.id);
+  try {
+    const result = await Product.findById(req.params.id);
 
-  if (!product) {
-    return res.sendStatus(404);
+    if (!result) {
+      return res.sendStatus(404);
+    }
+
+    return res.send(result);
+  } catch {
+    return res.sendStatus(500);
   }
-
-  res.send(product);
 });
 
 productsRouter.post('/', imagesUpload.single('image'), async (req, res) => {
-  if (!req.body.title || !req.body.price) {
-    return res.status(400).send({error: 'All fields are required'});
+  try {
+    const productData: ProductWithoutId = {
+      title: req.body.title,
+      description: req.body.description,
+      price: parseFloat(req.body.price),
+      image: req.file ? req.file.filename : null,
+    };
+
+    const product = new Product(productData);
+
+    try {
+      await product.save();
+      return res.send(product);
+    } catch (error) {
+      return res.status(400).send(error);
+    }
+  } catch (e) {
+    return res.sendStatus(500);
   }
-
-  const productData: ProductWithoutId = {
-    title: req.body.title,
-    description: req.body.description,
-    price: parseFloat(req.body.price),
-    image: req.file ? req.file.filename : null,
-  };
-
-  const savedProduct = await fileDb.addItem(productData);
-
-  res.send(savedProduct);
 });
 
 export default productsRouter;

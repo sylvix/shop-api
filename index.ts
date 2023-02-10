@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import fileDb from "./fileDb";
+import mongoose from 'mongoose';
 import productsRouter from "./routers/products";
 
 const app = express();
@@ -12,10 +12,15 @@ app.use(express.json());
 app.use('/products', productsRouter);
 
 const run = async () => {
-  await fileDb.init();
+  mongoose.set('strictQuery', false);
+  await mongoose.connect('mongodb://localhost/shop');
 
   app.listen(port, () => {
     console.log('We are live on ' + port);
+  });
+
+  process.on('exit', () => {
+    mongoose.disconnect();
   });
 };
 
