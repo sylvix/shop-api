@@ -1,13 +1,14 @@
 import express from "express";
-import {ProductWithoutId} from "../types";
+import { ProductMutation } from '../types';
 import { imagesUpload } from "../multer";
 import Product from "../models/Product";
+import mongoose from 'mongoose';
 
 const productsRouter = express.Router();
 
 productsRouter.get('/', async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().populate('category');
     return res.send(products);
   } catch {
     return res.sendStatus(500);
@@ -28,25 +29,27 @@ productsRouter.get('/:id', async (req, res) => {
   }
 });
 
-productsRouter.post('/', imagesUpload.single('image'), async (req, res) => {
+productsRouter.post('/', imagesUpload.single('image'), async (req, res, next) => {
+
+  const productData: ProductMutation = {
+    category: req.body.category,
+    title: req.body.title,
+    description: req.body.description,
+    price: parseFloat(req.body.price),
+    image: req.file ? req.file.filename : null,
+  };
+
+  const product = new Product(productData);
+
   try {
-    const productData: ProductWithoutId = {
-      title: req.body.title,
-      description: req.body.description,
-      price: parseFloat(req.body.price),
-      image: req.file ? req.file.filename : null,
-    };
-
-    const product = new Product(productData);
-
-    try {
-      await product.save();
-      return res.send(product);
-    } catch (error) {
-      return res.status(400).send(error);
-    }
+    await product.save();
+    return res.send(product);
   } catch (e) {
-    return res.sendStatus(500);
+    if (e instanceof mongoose.Error.ValidationError) {
+      return res.status(400).send(e);
+    } else {
+      return next(e);
+    }
   }
 });
 

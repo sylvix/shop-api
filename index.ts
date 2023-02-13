@@ -1,7 +1,8 @@
 import cors from 'cors';
 import express from 'express';
 import mongoose from 'mongoose';
-import productsRouter from "./routers/products";
+import productsRouter from './routers/products';
+import categoriesRouter from './routers/categories';
 
 const app = express();
 const port = 8000;
@@ -10,6 +11,7 @@ app.use(cors());
 app.use(express.static('public'));
 app.use(express.json());
 app.use('/products', productsRouter);
+app.use('/categories', categoriesRouter);
 
 const run = async () => {
   mongoose.set('strictQuery', false);
