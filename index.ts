@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import mongoose from 'mongoose';
+import config from './config';
 import productsRouter from './routers/products';
 import categoriesRouter from './routers/categories';
 import usersRouter from './routers/users';
@@ -17,7 +18,7 @@ app.use('/users', usersRouter);
 
 const run = async () => {
   mongoose.set('strictQuery', false);
-  await mongoose.connect('mongodb://localhost/shop');
+  await mongoose.connect(config.db);
 
   app.listen(port, () => {
     console.log('We are live on ' + port);
