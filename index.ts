@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import productsRouter from './routers/products';
 import categoriesRouter from './routers/categories';
+import usersRouter from './routers/users';
 
 const app = express();
 const port = 8000;
@@ -12,6 +13,7 @@ app.use(express.static('public'));
 app.use(express.json());
 app.use('/products', productsRouter);
 app.use('/categories', categoriesRouter);
+app.use('/users', usersRouter);
 
 const run = async () => {
   mongoose.set('strictQuery', false);

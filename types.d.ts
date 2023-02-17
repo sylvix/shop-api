@@ -5,3 +5,9 @@ export interface ProductMutation {
   price: number;
   image: string | null;
 }
+
+export interface IUser {
+  username: string;
+  password: string;
+  token: string;
+}
