@@ -1,8 +1,9 @@
-import express from "express";
+import { promises as fs } from 'fs';
+import express from 'express';
 import { ProductMutation } from '../types';
-import { imagesUpload } from "../multer";
-import Product from "../models/Product";
-import mongoose from 'mongoose';
+import { imagesUpload } from '../multer';
+import Product from '../models/Product';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 const productsRouter = express.Router();
 
@@ -30,7 +31,6 @@ productsRouter.get('/:id', async (req, res) => {
 });
 
 productsRouter.post('/', imagesUpload.single('image'), async (req, res, next) => {
-
   const productData: ProductMutation = {
     category: req.body.category,
     title: req.body.title,
@@ -45,6 +45,38 @@ productsRouter.post('/', imagesUpload.single('image'), async (req, res, next) =>
     await product.save();
     return res.send(product);
   } catch (e) {
+    if (req.file) {
+      await fs.unlink(req.file.path);
+    }
+
+    if (e instanceof mongoose.Error.ValidationError) {
+      return res.status(400).send(e);
+    } else {
+      return next(e);
+    }
+  }
+});
+
+productsRouter.patch('/:id', imagesUpload.single('image'), async (req, res, next) => {
+  const product: HydratedDocument<ProductMutation> | null = await Product.findById(req.params.id);
+
+  if (!product) {
+    return res.sendStatus(404);
+  }
+
+  product.title = req.body.title;
+  product.price = req.body.price;
+  product.description = req.body.description;
+  product.image = req.file ? req.file.filename : null;
+
+  try {
+    await product.save();
+    return res.send(product);
+  } catch (e) {
+    if (req.file) {
+      await fs.unlink(req.file.path);
+    }
+
     if (e instanceof mongoose.Error.ValidationError) {
       return res.status(400).send(e);
     } else {
