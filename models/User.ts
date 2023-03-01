@@ -20,6 +20,7 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
     validate: {
       validator: async function (this: HydratedDocument<IUser>, username: string): Promise<boolean> {
         if (!this.isModified('username')) return true;
+
         const user: HydratedDocument<IUser> | null = await User.findOne({username});
         return !Boolean(user);
       },
