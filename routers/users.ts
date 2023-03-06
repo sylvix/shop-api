@@ -25,19 +25,19 @@ usersRouter.post('/', async (req, res, next) => {
 });
 
 usersRouter.post('/sessions', async (req, res, next) => {
-  const user = await User.findOne({username: req.body.username});
-
-  if (!user) {
-    return res.status(400).send({error: 'Username or password incorrect'});
-  }
-
-  const isMatch = await user.checkPassword(req.body.password);
-
-  if (!isMatch) {
-    return res.status(400).send({error: 'Username or password incorrect'});
-  }
-
   try {
+    const user = await User.findOne({username: req.body.username});
+
+    if (!user) {
+      return res.status(400).send({error: 'Username or password incorrect'});
+    }
+
+    const isMatch = await user.checkPassword(req.body.password);
+
+    if (!isMatch) {
+      return res.status(400).send({error: 'Username or password incorrect'});
+    }
+
     user.generateToken();
     await user.save();
 
