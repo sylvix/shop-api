@@ -4,6 +4,8 @@ import { ProductMutation } from '../types';
 import { imagesUpload } from '../multer';
 import Product from '../models/Product';
 import mongoose, { HydratedDocument } from 'mongoose';
+import auth from '../middleware/auth';
+import permit from '../middleware/permit';
 
 const productsRouter = express.Router();
 
@@ -30,19 +32,16 @@ productsRouter.get('/:id', async (req, res) => {
   }
 });
 
-productsRouter.post('/', imagesUpload.single('image'), async (req, res, next) => {
-  const productData: ProductMutation = {
-    category: req.body.category,
-    title: req.body.title,
-    description: req.body.description,
-    price: parseFloat(req.body.price),
-    image: req.file ? req.file.filename : null,
-  };
-
-  const product = new Product(productData);
-
+productsRouter.post('/', auth, permit('admin'), imagesUpload.single('image'), async (req, res, next) => {
   try {
-    await product.save();
+    const product = await Product.create({
+      category: req.body.category,
+      title: req.body.title,
+      description: req.body.description,
+      price: parseFloat(req.body.price),
+      image: req.file ? req.file.filename : null,
+    });
+
     return res.send(product);
   } catch (e) {
     if (req.file) {

@@ -19,30 +19,34 @@ const run = async () => {
   }
 
   const [cpuCategory, ssdCategory] = await Category.create({
-    title: "CPUs",
-    description: "Central Processor Units"
+    title: 'CPUs',
+    description: 'Central Processor Units'
   }, {
-    title: "SSDs",
-    description: "Solid State Drives"
+    title: 'SSDs',
+    description: 'Solid State Drives'
   });
 
   await Product.create({
-    title: "Intel Core i7 12700K",
+    title: 'Intel Core i7 12700K',
     price: 350,
     category: cpuCategory._id,
-    image: "fixtures/cpu.jpg"
+    image: 'fixtures/cpu.jpg'
   }, {
-    title: "Samsung 990 Pro 1TB",
+    title: 'Samsung 990 Pro 1TB',
     price: 170,
     category: ssdCategory._id,
-    image: "fixtures/ssd.jpg"
+    image: 'fixtures/ssd.jpg'
   });
 
   await User.create({
-    username: "user",
-    email: "user@shop.com",
-    password: "1@345qWert",
-    token: crypto.randomUUID()
+    username: 'user',
+    password: '1@345qWert',
+    token: crypto.randomUUID(),
+  }, {
+    username: 'admin',
+    password: '1@345qWert',
+    token: crypto.randomUUID(),
+    role: 'admin'
   });
 
   await db.close();
